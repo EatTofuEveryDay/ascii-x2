@@ -8,6 +8,8 @@ var _content = document.querySelector("#content");
 
 class BrowserDriver extends EventEmitter<DriverEventStr> implements IDriver {
   private _lines: HTMLParagraphElement[] = [];
+  private _width: number = 0;
+  private _height: number = 0;
 
   constructor() {
     super();
@@ -17,6 +19,12 @@ class BrowserDriver extends EventEmitter<DriverEventStr> implements IDriver {
   }
 
   initWindow(width: number, height: number) {
+    this._width = width;
+    this._height = height;
+    this._lines = [];
+    while (_content.childElementCount > 0) {
+      _content.firstChild.remove();
+    }
     for (var i = 0; i < height; i++) {
       var el = document.createElement("p");
       this._lines.push(el);
@@ -53,6 +61,9 @@ class BrowserDriver extends EventEmitter<DriverEventStr> implements IDriver {
   eventNames(): DriverEventStr[] {
     return ["key"];
   }
+
+  width() { return this._width; }
+  height() { return this._height; }
 
   // Override
   on(ev: "key", cb: (key: string) => void): number { return super.on(ev, cb); }

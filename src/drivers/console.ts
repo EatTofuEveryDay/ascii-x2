@@ -10,6 +10,9 @@ const linebr = "\n";
 class ConsoleDriver extends EventEmitter<DriverEventStr> implements IDriver {
   private detailedPlatform: string;
   private stdout: tty.WriteStream;
+  private _width: number;
+  private _height: number;
+
   constructor() {
     super();
     // Setup stdin for TTY use
@@ -36,7 +39,10 @@ class ConsoleDriver extends EventEmitter<DriverEventStr> implements IDriver {
       this.detailedPlatform += " " + thisKey + ":" + process.versions[thisKey];
     }
   }
-  initWindow(width: number, height: number) { }
+  initWindow(width: number, height: number) {
+    this._width = width;
+    this._height = height;
+  }
   title(str: string = null): string {
     if (str) {
       process.title = str;
@@ -70,6 +76,10 @@ class ConsoleDriver extends EventEmitter<DriverEventStr> implements IDriver {
   eventNames(): DriverEventStr[] {
     return ["key"];
   }
+
+  width(): number { return this._width; }
+  height(): number { return this._height; }
+
   // Override
   on(ev: "key", cb: (key: string) => void): number { return super.on(ev, cb); }
 }

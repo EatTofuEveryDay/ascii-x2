@@ -30,14 +30,14 @@ abstract class EventEmitter<EventStr extends string> implements IEventEmitter<Ev
     this.cbs = {};
   }
 
-  emit(ev: EventStr, ...args: any) {
+  emit(ev: EventStr, ...args: any[]) {
     if (!this.cbs[ev]) {
       this.cbs[ev] = [];
     }
     for (var i = 0; i < this.cbs[ev].length; i++) {
       var cobj = this.cbs[ev][i];
       if (cobj) {
-        cobj.cb(args);
+        cobj.cb(...args);
         cobj.times--;
         if (cobj.times === 0) {
           delete this.cbs[ev][i];

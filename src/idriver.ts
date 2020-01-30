@@ -28,6 +28,8 @@ interface IDriver extends IEventEmitter<DriverEventStr> {
   getText(fcol: string, bcol: string, bold: boolean): string;
   getClosing(): string;
   platform(): string;
+  width(): number;
+  height(): number;
   // Returns a detailed string about the platform.
   // The format of this string is implementation-defined.
   // An example would be the User-Agent string on a browser.

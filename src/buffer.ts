@@ -4,10 +4,6 @@
 import { Color, ColorInJSON, colors, ColoredSpan } from "./colors";
 import { driver } from "./importdriver";
 
-var flags = {
-  // vsync was removed... It's no longer practical to implement
-};
-
 // ASCIIBuffer (and its colored brother) now supports scrolling
 // They will still work as normal if not provided maxHeight
 // param at constructor, if no param then
@@ -22,27 +18,37 @@ class ASCIIBuffer {
   invalidRows: Set<number>;
   readonly width: number;
   readonly height: number;
+  boundToScreen: boolean;
 
   // Scrolling
   scrollTop: number = 0;
   readonly maxHeight: number;
 
-  // Assumes that the driver is already initialized to the correct dimensions
-  constructor(nw: number, nh: number, maxHeight: number = nh) {
+  constructor(nw: number, nh: number, maxHeight: number = nh, bindToScreen = true) {
     this.width = nw;
     this.height = nh;
+    if (bindToScreen) {
+      var needInit = false;
+      if (nw > driver.width()) needInit = true;
+      if (nh > driver.height()) needInit = true;
+      if (needInit) {
+        driver.initWindow(nw, nh);
+      }
+    }
     this.maxHeight = maxHeight;
     this.invalidRows = new Set<number>();
     this.clear();
+    this.boundToScreen = bindToScreen;
   }
 
   // Clears (and renders) the buffer
   clear() {
     this.buf = [];
-    for (var i = 0; i < this.height; i++) {
+    for (var i = 0; i < this.maxHeight; i++) {
       this.buf.push(" ".repeat(this.width));
     }
-    this.render(true);
+    if(this.boundToScreen)
+      this.render(true);
   }
 
   // Drawing methods
@@ -91,11 +97,15 @@ class ASCIIBuffer {
   }
 
   scroll(x: number) {
+    if (x + this.scrollTop + this.height > this.maxHeight) return;
     this.scrollTop += x;
+    this.render(true);
   }
 
   scrollTo(x: number) {
+    if (x + this.height > this.maxHeight) return;
     this.scrollTop = x;
+    this.render(true);
   }
 
   invalidateRow(x: number) {
@@ -116,10 +126,10 @@ class ASCIIBuffer {
 class ColoredASCIIBuffer extends ASCIIBuffer {
   // Access like this.spancache[line][index]
   spancache: ColoredSpan[][];
-  constructor(nw: number, nh: number, maxHeight: number = nh) {
-    super(nw, nh, maxHeight);
+  constructor(nw: number, nh: number, maxHeight: number = nh, bindToScreen = true) {
+    super(nw, nh, maxHeight, bindToScreen);
     this.spancache = [];
-    for (var i = 0; i < nh; i++) {
+    for (var i = 0; i < maxHeight; i++) {
       this.spancache.push([]);
     }
   }
@@ -130,12 +140,14 @@ class ColoredASCIIBuffer extends ASCIIBuffer {
   clear_col(line?: number) {
     if (line === undefined) {
       this.spancache = [];
-      for (var i = 0; i < this.height; i++) {
+      for (var i = 0; i < this.maxHeight; i++) {
         this.spancache.push([]);
       }
     } else {
       this.spancache[line] = [];
     }
+    if (this.boundToScreen)
+      this.render(true);
   }
   color(line: number, from: number, to: number, fcol?: Color, bcol?: Color, bold: boolean = false) {
     var cspan: ColoredSpan = new ColoredSpan();

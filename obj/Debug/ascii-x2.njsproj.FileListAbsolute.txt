@@ -1,0 +1,2 @@
+C:\Users\Adrian\source\repos\ascii-x2\obj\Debug\ascii-x2.njsprojAssemblyReference.cache
+C:\Users\Adrian\source\repos\ascii-x2\bin\Microsoft.NodejsTools.WebRole.dll
